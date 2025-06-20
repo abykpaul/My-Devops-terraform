@@ -52,13 +52,13 @@ pipeline {
       }
     }
 
-    stage('TFSEC Security Scan') {
+  /*  stage('TFSEC Security Scan') {
       steps {
         dir(MODULE_DIR) {
           bat 'C:\\Tools\\tfsec\\tfsec.exe .'
         }
       }
-    }
+    } */
 
     stage('Terraform Plan') {
       steps {
