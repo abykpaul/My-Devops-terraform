@@ -1,5 +1,3 @@
-// Jenkinsfile with full integration for Terraform + GitHub + Linting + Security + Environments
-
 pipeline {
   agent any
 
@@ -17,6 +15,7 @@ pipeline {
     AWS_REGION = 'ap-south-1'
     TFVARS_FILE = "${params.ENV}.tfvars"
     MODULE_DIR = 'jenkins-aws-modules-terra'
+    BACKEND_FILE = "${params.ENV}.backend.tfvars"
   }
 
   stages {
@@ -39,7 +38,7 @@ pipeline {
       steps {
         dir(MODULE_DIR) {
           withAWS(credentials: 'aws-creds', region: AWS_REGION) {
-            bat 'terraform init -reconfigure'
+            bat "terraform init -backend-config=${BACKEND_FILE} -reconfigure"
           }
         }
       }
