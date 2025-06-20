@@ -30,7 +30,7 @@ pipeline {
     stage('Terraform Format Check') {
       steps {
         dir(MODULE_DIR) {
-          sh 'terraform fmt -check -recursive'
+          bat 'terraform fmt -check -recursive'
         }
       }
     }
@@ -39,7 +39,7 @@ pipeline {
       steps {
         dir(MODULE_DIR) {
           withAWS(credentials: 'aws-creds', region: AWS_REGION) {
-            sh 'terraform init'
+            bat 'terraform init'
           }
         }
       }
@@ -48,7 +48,7 @@ pipeline {
     stage('TFLint') {
       steps {
         dir(MODULE_DIR) {
-          sh 'tflint --init && tflint'
+          bat 'tflint --init && tflint'
         }
       }
     }
@@ -56,7 +56,7 @@ pipeline {
     stage('TFSEC Security Scan') {
       steps {
         dir(MODULE_DIR) {
-          sh 'tfsec .'
+          bat 'tfsec .'
         }
       }
     }
@@ -65,7 +65,7 @@ pipeline {
       steps {
         dir(MODULE_DIR) {
           withAWS(credentials: 'aws-creds', region: AWS_REGION) {
-            sh "terraform plan -var-file=${TFVARS_FILE} -out=tfplan.out"
+            bat "terraform plan -var-file=${TFVARS_FILE} -out=tfplan.out"
           }
         }
       }
@@ -78,9 +78,9 @@ pipeline {
           withAWS(credentials: 'aws-creds', region: AWS_REGION) {
             script {
               if (params.DESTROY) {
-                sh "terraform destroy -auto-approve -var-file=${TFVARS_FILE}"
+                bat "terraform destroy -auto-approve -var-file=${TFVARS_FILE}"
               } else {
-                sh "terraform apply -auto-approve tfplan.out"
+                bat "terraform apply -auto-approve tfplan.out"
               }
             }
           }
