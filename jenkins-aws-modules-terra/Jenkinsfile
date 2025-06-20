@@ -1,59 +1,100 @@
+// Jenkinsfile with full integration for Terraform + GitHub + Linting + Security + Environments
+
 pipeline {
   agent any
 
+  options {
+    timestamps()
+    ansiColor('xterm')
+  }
+
   parameters {
-    choice(name: 'ENV', choices: ['dev', 'prod'], description: 'Choose environment')
-    booleanParam(name: 'DESTROY', defaultValue: false, description: 'Destroy infrastructure?')
+    choice(name: 'ENV', choices: ['dev', 'prod'], description: 'Choose the environment')
+    booleanParam(name: 'DESTROY', defaultValue: false, description: 'Destroy the infrastructure?')
   }
 
   environment {
     AWS_REGION = 'ap-south-1'
     TFVARS_FILE = "${params.ENV}.tfvars"
-    MODULE_DIR = "jenkins-aws-modules-terra"
+    MODULE_DIR = 'jenkins-aws-modules-terra'
   }
 
   stages {
-    stage('Checkout') {
+
+    stage('Checkout Code') {
       steps {
-        git branch: 'release/terraform_demo', url: 'https://github.com/abykpaul/Terraform-Aws-Jenkins-Mig.git'
+        git branch: 'main', url: 'https://github.com/abykpaul/My-Devops-terraform.git'
+      }
+    }
+
+    stage('Terraform Format Check') {
+      steps {
+        dir(MODULE_DIR) {
+          sh 'terraform fmt -check -recursive'
+        }
       }
     }
 
     stage('Terraform Init') {
       steps {
-        dir("${MODULE_DIR}") {
-          withAWS(credentials: 'aws-creds', region: "${AWS_REGION}") {
-            bat "terraform init -backend-config=${params.ENV}.backend.tfvars"
+        dir(MODULE_DIR) {
+          withAWS(credentials: 'aws-creds', region: AWS_REGION) {
+            sh 'terraform init'
           }
+        }
+      }
+    }
+
+    stage('TFLint') {
+      steps {
+        dir(MODULE_DIR) {
+          sh 'tflint --init && tflint'
+        }
+      }
+    }
+
+    stage('TFSEC Security Scan') {
+      steps {
+        dir(MODULE_DIR) {
+          sh 'tfsec .'
         }
       }
     }
 
     stage('Terraform Plan') {
       steps {
-        dir("${MODULE_DIR}") {
-          withAWS(credentials: 'aws-creds', region: "${AWS_REGION}") {
-            bat "terraform plan -var-file=${TFVARS_FILE} -out=tfplan.out"
+        dir(MODULE_DIR) {
+          withAWS(credentials: 'aws-creds', region: AWS_REGION) {
+            sh "terraform plan -var-file=${TFVARS_FILE} -out=tfplan.out"
           }
         }
       }
     }
 
-    stage('Terraform Apply / Destroy') {
+    stage('Terraform Apply or Destroy') {
       steps {
-        dir("${MODULE_DIR}") {
+        dir(MODULE_DIR) {
           input message: "Proceed with ${params.DESTROY ? 'Destroy' : 'Apply'}?"
-          withAWS(credentials: 'aws-creds', region: "${AWS_REGION}") {
+          withAWS(credentials: 'aws-creds', region: AWS_REGION) {
             script {
               if (params.DESTROY) {
-                bat "terraform destroy -auto-approve -var-file=${TFVARS_FILE}"
+                sh "terraform destroy -auto-approve -var-file=${TFVARS_FILE}"
               } else {
-                bat "terraform apply -auto-approve tfplan.out"
+                sh "terraform apply -auto-approve tfplan.out"
               }
             }
           }
         }
       }
+    }
+  }
+
+  post {
+    failure {
+      echo "Pipeline failed. Please check errors above."
+    }
+    success {
+      echo "Pipeline completed successfully."
     }
   }
 }
