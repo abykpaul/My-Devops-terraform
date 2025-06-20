@@ -55,7 +55,7 @@ pipeline {
     stage('TFSEC Security Scan') {
       steps {
         dir(MODULE_DIR) {
-          bat 'tfsec .'
+          bat 'C:\\Tools\\tfsec\\tfsec.exe .'
         }
       }
     }
