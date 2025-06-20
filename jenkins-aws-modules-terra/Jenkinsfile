@@ -39,7 +39,7 @@ pipeline {
       steps {
         dir(MODULE_DIR) {
           withAWS(credentials: 'aws-creds', region: AWS_REGION) {
-            bat 'terraform init'
+            bat 'terraform init -reconfigure'
           }
         }
       }
