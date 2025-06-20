@@ -33,4 +33,3 @@ module "ec2" {
   iam_instance_profile = module.iam.instance_profile
 }
 
-data "aws_availability_zones" "available" {}
