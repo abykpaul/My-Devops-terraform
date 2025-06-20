@@ -1,0 +1,13 @@
+# Ignore Terraform working directory
+.terraform/
+
+# Ignore Terraform plan/output/state files
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfplan
+*.log
+*.out
+
+# But keep the lock file (required)
+!.terraform.lock.hcl
