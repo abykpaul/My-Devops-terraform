@@ -1,22 +1,22 @@
 
 variable "region" {
-    type = string
+  type = string
 }
 variable "ami" {
-    type = string
+  type = string
 }
 variable "instance_type" {
-    type = string
+  type = string
 }
 variable "name" {
-    type = string
+  type = string
 }
 variable "vpc_cidr" {
-    type = string
+  type = string
 }
 variable "bucket_name" {
-    type = string
+  type = string
 }
 variable "subnet_cidr" {
-    type = string
+  type = string
 }
