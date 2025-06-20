@@ -20,3 +20,7 @@ variable "bucket_name" {
 variable "subnet_cidr" {
   type = string
 }
+variable "env" {
+  description = "Deployment environment (e.g., dev, prod)"
+  type        = string
+}
